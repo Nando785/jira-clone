@@ -1,3 +1,4 @@
+import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
@@ -8,6 +9,7 @@ type RequestType = InferRequestType<typeof client.api.auth.logout["$post"]>;
 
 export const useLogout = () => {
     const queryClient = useQueryClient();
+    const router = useRouter();
 
     const mutation = useMutation<
         ResponseType, 
@@ -18,6 +20,7 @@ export const useLogout = () => {
             return await response.json();
         },
         onSuccess: () => {
+            router.refresh();
             queryClient.invalidateQueries({ queryKey: ["current"] });
         }
     });

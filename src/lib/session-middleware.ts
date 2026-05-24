@@ -29,23 +29,29 @@ type AdditionalContext = {
 
 export const sessionMiddleware = createMiddleware<AdditionalContext>(
     async (c, next) => {
+        // Create a new Appwrite client
         const client = new Client()
             .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
             .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
         
+        // Get the session from the cookie
         const session = getCookie(c, AUTH_COOKIE);
-
+        
+        // If no session, return 401
         if (!session) {
             return c.json({ error : "Unauthorized" }, 401);
         }
+
+    
         client.setSession(session);
         
+        // Initialize the Appwrite services
         const account = new Account(client);
         const databases = new Databases(client);
         const storage = new Storage(client);
 
         const user = await account.get();
-
+        
         c.set("account", account);
         c.set("databases", databases);
         c.set("storage", storage);
