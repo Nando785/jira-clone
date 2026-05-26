@@ -5,6 +5,7 @@ import { Account, Client } from "node-appwrite";
 
 import { AUTH_COOKIE } from "./constants";
 
+// Get the current user
 export const getCurrent = async () => {
     try {
         // Create a new Appwrite client
