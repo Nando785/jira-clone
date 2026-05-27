@@ -28,13 +28,15 @@ interface CreateWorkspaceFormProps {
 export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
     const { mutate, isPending } = useCreateWorkspace();
 
+    // Initialize form, create a single input and set initial values, use zod for validation
     const form = useForm<z.infer<typeof createWorkspaceSchema>>({
-        resolver: zodResolver(createWorkspaceSchema),
+        resolver: zodResolver(createWorkspaceSchema), // Require input to match zod schema
         defaultValues: {
             name: ""
         },
     });
 
+    // Call encapsulated workspace creation functions from useCreateWorkspace and pass in given values
     const onSubmit = (values: z.infer<typeof createWorkspaceSchema>) => {
         mutate({ json: values});
     };

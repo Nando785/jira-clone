@@ -8,6 +8,13 @@ import { client } from "@/lib/rpc";
 type ResponseType = InferResponseType<typeof client.api.auth.register["$post"]>;
 type RequestType = InferRequestType<typeof client.api.auth.register["$post"]>;
 
+/**
+ * Mutation hook for registering a new user. The register endpoint automatically
+ * creates a session on success, so the onSuccess handler mirrors useLogin —
+ * refreshing the router and invalidating the "current" query.
+ */
+
+
 export const useRegister = () => {
     const queryClient = useQueryClient();
     const router = useRouter();
@@ -28,6 +35,8 @@ export const useRegister = () => {
         },
         onSuccess: () => {
             toast.success("Registered");
+            // Refresh the router to update server components, then invalidate
+            // the cache so any subscriber to "current" re-fetches the new session
             router.refresh();
             queryClient.invalidateQueries({ queryKey: ["current"] });
         },

@@ -8,6 +8,11 @@ import { client } from "@/lib/rpc"
 
 type ResponseType = InferResponseType<typeof client.api.auth.logout["$post"]>;
 
+/**
+ * Mutation hook for logging out the current user. On success, refreshes the router
+ * and invalidates the "current" query to clear the active session from the cache.
+ */
+
 export const useLogout = () => {
     const queryClient = useQueryClient();
     const router = useRouter();
@@ -28,6 +33,8 @@ export const useLogout = () => {
         onSuccess: () => {
             toast.success("Logout successful");
             router.refresh();
+            // Refresh the router to update server components, then invalidate
+            // the cache so any subscriber to "current" re-fetches the new session
             queryClient.invalidateQueries({ queryKey: ["current"] });
         },
         onError: () => {
