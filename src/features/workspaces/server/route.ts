@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { ID } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
-import { DATABASE_ID, IMAGES_BUCKET_ID, WORKSPACES_ID } from "@/config";
+import { DATABASE_ID, IMAGES_BUCKET_ID, WORKSPACES_ID, APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { createWorkspaceSchema } from "../schemas";
@@ -45,13 +45,14 @@ const app = new Hono()
                 );
 
                 //const arrayBuffer = await storage.getFilePreview(
-                const arrayBuffer = await storage.getFileView(
-                    IMAGES_BUCKET_ID, 
-                    file.$id
-                );
+                //     IMAGES_BUCKET_ID, 
+                //     file.$id
+                // );
 
                 //uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString('base64')}`;
-                uploadedImageUrl = arrayBuffer.toString();
+
+                // Construct the file URL manually since the getFilePreview endpoint is behind a paywall
+                uploadedImageUrl = `${APPWRITE_ENDPOINT}/storage/buckets/${IMAGES_BUCKET_ID}/files/${file.$id}/view?project=${APPWRITE_PROJECT_ID}&mode=admin`;
             }
 
             // Create a new document using the Appwrite API's `createDocument` function
