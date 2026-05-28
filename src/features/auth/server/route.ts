@@ -16,6 +16,8 @@ import { AUTH_COOKIE } from "../constants";
  * Login and register use an admin Appwrite client to create sessions, which are persisted
  * as secure HttpOnly cookies. Logout deletes both the cookie and the Appwrite session.
  * Protected routes use sessionMiddleware to verify the cookie before the handler runs.
+ * 
+ * @returns {Hono} The Hono route handler for authentication.
  */
 
 const app = new Hono()

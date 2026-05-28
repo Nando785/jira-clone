@@ -24,9 +24,9 @@ export const useCreateWorkspace = () => {
         Error, 
         RequestType
     >({
-        mutationFn: async ({ json }) => {
+        mutationFn: async ({ form }) => {
             // Send a POST request to create a new workspace
-            const response = await client.api.workspaces["$post"]({ json });
+            const response = await client.api.workspaces["$post"]({ form });
 
             if (!response.ok) { throw new Error("Failed to create workspace"); }
 
