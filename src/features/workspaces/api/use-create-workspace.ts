@@ -38,7 +38,6 @@ export const useCreateWorkspace = () => {
             toast.success("Workspace created");
 
             // Invalidate the 'workspaces' query and trigger a refetch of the data to update UI
-            // Used to update workspace count in navbar after creating a new workspace
             queryClient.invalidateQueries({ queryKey: ["workspaces"] });
         },
 

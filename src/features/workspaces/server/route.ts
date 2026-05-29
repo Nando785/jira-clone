@@ -1,9 +1,19 @@
 import { Hono } from "hono";
-import { ID } from "node-appwrite";
+import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
-import { DATABASE_ID, IMAGES_BUCKET_ID, WORKSPACES_ID, APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID } from "@/config";
+import { MemberRole } from "@/features/members/types";
+
+import {
+    DATABASE_ID, 
+    IMAGES_BUCKET_ID, 
+    WORKSPACES_ID, 
+    APPWRITE_ENDPOINT, 
+    APPWRITE_PROJECT_ID,
+    MEMBERS_ID
+} from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
+import { generateInviteCode } from "@/lib/utils";
 
 import { createWorkspaceSchema } from "../schemas";
 
@@ -24,11 +34,28 @@ import { createWorkspaceSchema } from "../schemas";
 
 const app = new Hono()
     .get("/", sessionMiddleware, async (c) => {
+        const user = c.get("user");
         const databases = c.get("databases");
+
+        const members = await databases.listDocuments(
+            DATABASE_ID,
+            MEMBERS_ID,
+            [Query.equal("user_id", user.$id)]
+        );
+
+        const workspaceIds = members.documents.map((member) => member.workspace_id);
+
+        if (members.total === 0){
+            return c.json({ data: { documents: [], total: 0 } });
+        }
 
         const workspaces = await databases.listDocuments(
             DATABASE_ID,
             WORKSPACES_ID,
+            [
+                Query.orderDesc("$createdAt"),
+                Query.contains("$id", workspaceIds)
+            ],
         );
 
         return c.json({ data: workspaces });
@@ -74,6 +101,19 @@ const app = new Hono()
                     name,
                     user_id: user.$id,
                     imageUrl: uploadedImageUrl,
+                    invite_code: generateInviteCode(10),
+                },
+            );
+
+            // Automatically create a new admin member
+            await databases.createDocument(
+                DATABASE_ID,
+                MEMBERS_ID,
+                ID.unique(),
+                {
+                    workspace_id: workspace.$id,
+                    user_id: user.$id,
+                    role: MemberRole.ADMIN,
                 },
             );
 
