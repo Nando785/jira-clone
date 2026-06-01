@@ -77,8 +77,30 @@ export const getWorkspace = async ({workspaceId}: GetWorkspaceProps) => {
         return JSON.parse(JSON.stringify(workspace)) as Workspace;
         // return workspace;
 
-    } catch (error) {
-        console.error("Error getting current user:", error);
+    } catch {
+        return null;
+    }
+}
+
+interface GetWorkspaceInfoProps {
+    workspaceId: string
+}
+
+export const getWorkspaceInfo = async ({workspaceId}: GetWorkspaceInfoProps) => {
+    try {
+        const { databases, Account } = await createSessionClient();
+
+        const workspace = await databases.getDocument<Workspace>(
+            DATABASE_ID,
+            WORKSPACES_ID,
+            workspaceId,
+        );
+
+        return {
+            name: workspace.name,
+        }
+
+    } catch{
         return null;
     }
 }

@@ -8,7 +8,7 @@ interface WorkspaceIdSettingsPageProps {
     params: { 
         workspaceId: string 
     };
-}
+};
 
 const WorkspaceIdSettingsPage = async ({
     params
