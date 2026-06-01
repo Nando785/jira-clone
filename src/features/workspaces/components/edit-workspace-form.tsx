@@ -21,38 +21,44 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 
-import { createWorkspaceSchema } from "../schemas";
+import { updateWorkspaceSchema } from "../schemas";
 import { Button } from "@/components/ui/button";
-import { useCreateWorkspace } from "../api/use-create-workspace";
-import { ImageIcon } from "lucide-react";
+import { useUpdateWorkspace } from "../api/use-update-workspace";
+import { ArrowLeftIcon, ImageIcon } from "lucide-react";
+import { Workspace } from "../types";
 
 
-interface CreateWorkspaceFormProps {
-    onCancel?: () => void;
+interface EditWorkspaceForm {
+    onCancel?: () => void,
+    initialValues: Workspace;
 }
 
-export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
+export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm) => {
     const router = useRouter();
-    const { mutate, isPending } = useCreateWorkspace();
+    const { mutate, isPending } = useUpdateWorkspace();
 
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Initialize form, create a single input and set initial values, use zod for validation
-    const form = useForm<z.infer<typeof createWorkspaceSchema>>({
-        resolver: zodResolver(createWorkspaceSchema), // Require input to match zod schema
+    const form = useForm<z.infer<typeof updateWorkspaceSchema>>({
+        resolver: zodResolver(updateWorkspaceSchema), // Require input to match zod schema
         defaultValues: {
-            name: ""
+            ...initialValues,
+            image: initialValues.imageUrl ?? "",
         },
     });
  
     // Call encapsulated workspace creation functions from useCreateWorkspace and pass in given values
-    const onSubmit = (values: z.infer<typeof createWorkspaceSchema>) => {
+    const onSubmit = (values: z.infer<typeof updateWorkspaceSchema>) => {
         const finalValues = {
             ...values,
             image: values.image instanceof File ? values.image : "",
         };
 
-        mutate({ form: finalValues }, {
+        mutate({ 
+            form: finalValues,
+            param: { workspaceId: initialValues.$id }
+         }, {
             onSuccess: (response) => {
                 // Appwrite SDK types $id as possibly undefined; guard ensures it exists before navigating
                 if (!("data" in response) || !response.data?.$id) return;
@@ -71,9 +77,13 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
 
     return (
         <Card className="w-full h-full border-none shadow-none">
-            <CardHeader className="flex p-7">
+            <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
+                <Button size="sm" variant="secondary" onClick={onCancel ? onCancel : () => router.push(`/workspaces/${initialValues.$id}`)}>
+                    <ArrowLeftIcon className="size-4 mr-4" />
+                    Back
+                </Button>
                 <CardTitle className="text-xl font-bold">
-                    Create New Workspace
+                    {initialValues.name}
                 </CardTitle>
             </CardHeader>
 
@@ -194,7 +204,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                 variant="primary"
                                 disabled={isPending}
                             >
-                                Create Workspace
+                                Save Changes
                             </Button>
                         </div>
                     </form>
