@@ -1,11 +1,10 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { Databases, Client, Query, Account } from "node-appwrite";
+import { Query } from "node-appwrite";
 
-import { AUTH_COOKIE } from "@/features/auth/constants";
 import { getMember } from "@/features/members/utils";
 
+import { createSessionClient } from "@/lib/appwrite";
 import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
 
 import { Workspace } from "@/features/workspaces/types";
@@ -19,19 +18,8 @@ import { Workspace } from "@/features/workspaces/types";
 // Get the current workspace
 export const getWorkspaces = async () => {
     try {
-        const client = new Client()
-            .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-            .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
-        
-        const cookie = await cookies();
-        const session = cookie.get(AUTH_COOKIE);
-
-        if (!session) return { documents: [], total: 0 };
-        client.setSession(session.value);
-
-        const databases = new Databases(client)
-        const account = new Account(client);
-         const user = await account.get();
+        const { databases, Account } = await createSessionClient();
+        const user = await Account.get();
 
         const members = await databases.listDocuments(
             DATABASE_ID,
@@ -68,19 +56,8 @@ interface GetWorkspaceProps {
 
 export const getWorkspace = async ({workspaceId}: GetWorkspaceProps) => {
     try {
-        const client = new Client()
-            .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-            .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
-        
-        const cookie = await cookies();
-        const session = cookie.get(AUTH_COOKIE);
-
-        if (!session) return null;
-        client.setSession(session.value);
-
-        const databases = new Databases(client)
-        const account = new Account(client);
-        const user = await account.get();
+        const { databases, Account } = await createSessionClient();
+        const user = await Account.get();
 
         const member = await getMember({
             databases,
