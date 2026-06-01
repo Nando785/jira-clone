@@ -15,7 +15,8 @@ import {
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { generateInviteCode } from "@/lib/utils";
 
-import { createWorkspaceSchema } from "../schemas";
+import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
+import { getMember } from "@/features/members/utils";
 
 /**
  * This module defines a Hono route handler for creating a new workspace.
@@ -114,6 +115,55 @@ const app = new Hono()
                     workspace_id: workspace.$id,
                     user_id: user.$id,
                     role: MemberRole.ADMIN,
+                },
+            );
+
+            return c.json({ data: workspace });
+        }
+    ).patch(
+        "/:workspaceId",
+        sessionMiddleware,
+        zValidator("form", updateWorkspaceSchema),
+        async (c) => {
+            const databases = c.get("databases");
+            const storage = c.get("storage");
+            const user = c.get("user");
+
+            const { workspaceId } = c.req.param();
+            const { name, image} = c.req.valid("form");
+
+            const member = await getMember({
+                databases,
+                userId: user.$id,
+                workspaceId,
+            });
+
+            if (!member || member.role !== MemberRole.ADMIN) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
+
+            let uploadedImageUrl: string | undefined;
+            
+            if (image instanceof File) {
+                const file = await storage.createFile(
+                    IMAGES_BUCKET_ID,
+                    ID.unique(),
+                    image,
+                );
+
+                // Construct the file URL manually since the getFilePreview endpoint is behind a paywall
+                uploadedImageUrl = `${APPWRITE_ENDPOINT}/storage/buckets/${IMAGES_BUCKET_ID}/files/${file.$id}/view?project=${APPWRITE_PROJECT_ID}&mode=admin`;
+            }else {
+                uploadedImageUrl = image;
+            }
+
+            const workspace = await databases.updateDocument(
+                DATABASE_ID,
+                WORKSPACES_ID,
+                workspaceId,
+                {
+                    name,
+                    imageUrl: uploadedImageUrl,
                 },
             );
 

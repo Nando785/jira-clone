@@ -4,7 +4,11 @@ import { cookies } from "next/headers";
 import { Databases, Client, Query, Account } from "node-appwrite";
 
 import { AUTH_COOKIE } from "@/features/auth/constants";
+import { getMember } from "@/features/members/utils";
+
 import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
+
+import { Workspace } from "@/features/workspaces/types";
 
 /**
  * This module 
@@ -58,3 +62,46 @@ export const getWorkspaces = async () => {
     }
 }
 
+interface GetWorkspaceProps {
+    workspaceId: string
+}
+
+export const getWorkspace = async ({workspaceId}: GetWorkspaceProps) => {
+    try {
+        const client = new Client()
+            .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+            .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
+        
+        const cookie = await cookies();
+        const session = cookie.get(AUTH_COOKIE);
+
+        if (!session) return null;
+        client.setSession(session.value);
+
+        const databases = new Databases(client)
+        const account = new Account(client);
+        const user = await account.get();
+
+        const member = await getMember({
+            databases,
+            userId: user.$id,
+            workspaceId
+        });
+
+        if (!member) { return null };
+
+        const workspace = await databases.getDocument<Workspace>(
+            DATABASE_ID,
+            WORKSPACES_ID,
+            workspaceId,
+        );
+
+        // Serialize to a plain object so it can be passed to Client Components
+        return JSON.parse(JSON.stringify(workspace)) as Workspace;
+        // return workspace;
+
+    } catch (error) {
+        console.error("Error getting current user:", error);
+        return null;
+    }
+}
