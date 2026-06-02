@@ -28,6 +28,7 @@ export async function createSessionClient() {
         }
     }
 }
+
 export async function createAdminClient() {
     const client = new Client()
         .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
@@ -36,6 +37,9 @@ export async function createAdminClient() {
     return{
         get account() {
             return new Account(client);
+        },
+        get users() {
+            return new Users(client);
         },
     };
 };
