@@ -5,16 +5,16 @@ import { toast } from "sonner";
 import { client } from "@/lib/rpc"
 import { useRouter } from "next/navigation";
 
-type ResponseType = InferResponseType<typeof client.api.workspaces[":workspaceId"]["$patch"], 200>; // Ignore failure case, error handled by mutation
-type RequestType = InferRequestType<typeof client.api.workspaces[":workspaceId"]["$patch"]>;
+type ResponseType = InferResponseType<typeof client.api.projects[":projectId"]["$patch"], 200>;
+type RequestType = InferRequestType<typeof client.api.projects[":projectId"]["$patch"]>;
 
 /**
- *
+ * Custom React hook for creating a project.
  * 
- * @returns {Mutation}
+ * @returns {}
  */
 
-export const useUpdateWorkspace = () => {
+export const useUpdateProject = () => {
     const router = useRouter();
     const queryClient = useQueryClient();
 
@@ -25,25 +25,26 @@ export const useUpdateWorkspace = () => {
     >({
         mutationFn: async ({ form, param }) => {
             // Send a POST request to create a new workspace
-            const response = await client.api.workspaces[":workspaceId"]["$patch"]({ form, param });
+            const response = await client.api.projects[":projectId"]["$patch"]({ form, param });
 
-            if (!response.ok) { throw new Error("Failed to update workspace"); }
+            if (!response.ok) { throw new Error("Failed to update project"); }
 
             return await response.json();
         },
 
         onSuccess: ({ data }) => {
             // Display toast success message
-            toast.success("Workspace updated");
+            toast.success("Project updated");
             router.refresh();
 
-            queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-            queryClient.invalidateQueries({ queryKey: ["workspace", data.$id] });
+            // Invalidate the 'projects' query and trigger a refetch of the data to update UI
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.invalidateQueries({ queryKey: ["project", data.$id] });
         },
 
         // Display toast error message
         onError: () => {
-            toast.error("Failed to create workspace");
+            toast.error("Failed to update project");
         }
     });
 

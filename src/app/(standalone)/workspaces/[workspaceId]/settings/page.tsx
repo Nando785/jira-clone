@@ -19,7 +19,7 @@ const WorkspaceIdSettingsPage = async ({
     if (!user){ redirect("/sign-in"); }
 
     const initialValues = await getWorkspace({ workspaceId: workspaceId });
-    if (!initialValues){ redirect(`/${workspaceId}`); }
+    
     return (
         <div className="w-full lg:max-w-xl">
             <EditWorkspaceForm initialValues={initialValues}/>
