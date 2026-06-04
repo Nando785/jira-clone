@@ -187,10 +187,10 @@ const app = new Hono()
                 {
                     name,
                     status,
-                    workspaceId,
-                    projectId,
-                    dueDate,
-                    assigneeId,
+                    workspace_id: workspaceId,
+                    project_id: projectId,
+                    due_date: dueDate,
+                    assignee_id: assigneeId,
                     position: newPosition
                 },
             );
