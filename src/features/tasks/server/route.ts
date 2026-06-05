@@ -89,19 +89,19 @@ const app = new Hono()
                 query,
             );
 
-            const projectIds = tasks.documents.map((task) => task.projectId);
-            const assigneeIds = tasks.documents.map((task) => task.assigneeId);
+            const projectIds = tasks.documents.map((task) => task.project_id);
+            const assigneeIds = tasks.documents.map((task) => task.assignee_id);
 
             const projects = await databases.listDocuments<Project>(
                 DATABASE_ID,
                 PROJECTS_ID,
-                projectIds.length > 0 ? [Query.contains("id", projectIds)] : []
+                projectIds.length > 0 ? [Query.equal("$id", projectIds)] : []
             );
 
             const members = await databases.listDocuments(
                 DATABASE_ID,
                 MEMBERS_ID,
-                assigneeIds.length > 0 ? [Query.contains("id", assigneeIds)] : []
+                assigneeIds.length > 0 ? [Query.equal("$id", assigneeIds)] : []
             );
 
             const assignees = await Promise.all(
@@ -117,11 +117,11 @@ const app = new Hono()
 
             const populatedTasks = tasks.documents.map((task) => {
                 const project = projects.documents.find(
-                    (project) => project.$id === task.projectId,
+                    (project) => project.$id === task.project_id,
                 );
 
                 const assignee = assignees.find(
-                    (assignee) => assignee.$id === task.assigneeId,
+                    (assignee) => assignee.$id === task.assignee_id,
                 );
 
                 return {
