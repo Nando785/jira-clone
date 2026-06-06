@@ -15,6 +15,39 @@ import { Task, TaskStatus } from "../types";
 
 
 const app = new Hono()
+    .delete(
+        "/:taskId",
+        sessionMiddleware,
+        async (c) => {
+            const user = c.get("user");
+            const databases = c.get("databases");
+            const { taskId } = c.req.param();
+
+            const task = await databases.getDocument<Task>(
+                DATABASE_ID,
+                TASKS_ID,
+                taskId
+            );
+
+            const member = await getMember({
+                databases,
+                workspaceId: task.workspace_id,
+                userId: user.$id,
+            });
+
+            if (!member) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
+
+            await databases.deleteDocument(
+                DATABASE_ID,
+                TASKS_ID,
+                taskId,
+            );
+
+            return c.json({ data: { $id: taskId } });
+        }
+    )
     .get(
         "/",
         sessionMiddleware,
@@ -196,6 +229,112 @@ const app = new Hono()
             );
 
             return c.json({ data: task});
+        }
+    )
+    .patch(
+        "/:taskId",
+        sessionMiddleware,
+        zValidator("json", createTaskSchema.partial()),
+        async (c) => {
+            const user = c.get("user");
+            const databases = c.get("databases");
+            const {
+                name,
+                status,
+                description,
+                projectId,
+                dueDate,
+                assigneeId
+            } = c.req.valid("json");
+            const { taskId } = c.req.param();
+
+            const existingTask = await databases.getDocument<Task>(
+                DATABASE_ID,
+                TASKS_ID,
+                taskId,
+            )
+
+            const member = await getMember({
+                databases,
+                workspaceId: existingTask.workspace_id,
+                userId: user.$id,
+            });
+
+            if (!member) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
+
+            const task = await databases.updateDocument(
+                DATABASE_ID,
+                TASKS_ID,
+                taskId,
+                {
+                    name,
+                    status,
+                    project_id: projectId,
+                    due_date: dueDate,
+                    assignee_id: assigneeId,
+                    description,
+                },
+            );
+
+            return c.json({ data: task});
+        }
+    )
+    .get(
+        "/:taskId",
+        sessionMiddleware,
+        async (c) => {
+            const currentUser = c.get("user");
+            const databases = c.get("databases");
+            const { users } = await createAdminClient();
+            const { taskId } = c.req.param();
+
+            const task = await databases.getDocument<Task>(
+                DATABASE_ID,
+                TASKS_ID,
+                taskId,
+            );
+
+            const currentMember = await getMember({
+                databases,
+                workspaceId: task.workspace_id,
+                userId: currentUser.$id,
+            });
+
+            if (!currentMember) {
+                return c.json({ error: "Unauthorized" }, 401);
+            }
+
+            const project = await databases.getDocument<Project>(
+                DATABASE_ID,
+                PROJECTS_ID,
+                task.project_id,
+            );
+
+            const member = await databases.getDocument(
+                DATABASE_ID,
+                MEMBERS_ID,
+                task.assignee_id,
+            );
+
+            const user = await users.get(member.user_id);
+
+            const assignee = {
+                ...member,
+                name: user.name,
+                email: user.email,
+            };
+
+            return (
+                c.json({
+                    data: {
+                        ...task,
+                        project,
+                        assignee,
+                    }
+                })
+            );
         }
     );
 

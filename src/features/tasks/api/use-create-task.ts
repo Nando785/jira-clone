@@ -8,7 +8,7 @@ type ResponseType = InferResponseType<typeof client.api.tasks["$post"], 200>;
 type RequestType = InferRequestType<typeof client.api.tasks["$post"]>;
 
 /**
- * Custom React hook for creating a project.
+ * 
  * 
  * @returns {}
  */
