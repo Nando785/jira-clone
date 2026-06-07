@@ -85,7 +85,7 @@ export const columns: ColumnDef<PopulatedTask>[] = [
         <div className="flex items-center gap-x-2 text-sm font-medium">
           <MemberAvatar
             className="size-6"
-            fallBackClassName="text-xs"
+            fallbackClassName="text-xs"
             name={assignee.name}
           />
           <p className="line-clamp-1">{assignee.name}</p>
@@ -109,7 +109,7 @@ export const columns: ColumnDef<PopulatedTask>[] = [
     cell: ({ row }) => {
       const dueDate = row.original.due_date;
 
-      return ( <TaskDate value={new Date(dueDate)} /> )
+      return ( <TaskDate value={dueDate} /> )
     }
   },
   {
