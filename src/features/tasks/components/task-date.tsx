@@ -3,7 +3,7 @@ import { differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface TaskDateProps {
-    value: Date;
+    value: string;
     className?: string;
 }
 
