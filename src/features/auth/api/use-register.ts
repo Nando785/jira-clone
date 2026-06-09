@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
@@ -17,7 +16,6 @@ type RequestType = InferRequestType<typeof client.api.auth.register["$post"]>;
 
 export const useRegister = () => {
     const queryClient = useQueryClient();
-    const router = useRouter();
 
     const mutation = useMutation<
         ResponseType, 
@@ -37,7 +35,6 @@ export const useRegister = () => {
             toast.success("Registered");
             // Refresh the router to update server components, then invalidate
             // the cache so any subscriber to "current" re-fetches the new session
-            router.refresh();
             queryClient.invalidateQueries({ queryKey: ["current"] });
         },
         onError: () => {

@@ -3,7 +3,6 @@ import { InferRequestType, InferResponseType } from "hono";
 import { toast } from "sonner";
 
 import { client } from "@/lib/rpc"
-import { useRouter } from "next/navigation";
 
 type ResponseType = InferResponseType<typeof client.api.projects[":projectId"]["$delete"], 200>;
 type RequestType = InferRequestType<typeof client.api.projects[":projectId"]["$delete"]>;
@@ -15,7 +14,6 @@ type RequestType = InferRequestType<typeof client.api.projects[":projectId"]["$d
  */
 
 export const useDeleteProject = () => {
-    const router = useRouter();
     const queryClient = useQueryClient();
 
     const mutation = useMutation<
@@ -35,7 +33,6 @@ export const useDeleteProject = () => {
         onSuccess: ({ data }) => {
             // Display toast success message
             toast.success("Project deleted");
-            router.refresh();
 
             // Invalidate the 'projects' query and trigger a refetch of the data to update UI
             queryClient.invalidateQueries({ queryKey: ["projects"] });

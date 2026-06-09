@@ -21,14 +21,17 @@ import { AUTH_COOKIE } from "../constants";
  */
 
 const app = new Hono()
-    .get("/current", sessionMiddleware, 
+    .get(
+        "/current", 
+        sessionMiddleware, 
         (c) => {
             const user = c.get("user");
 
             return c.json({ data : user});
         }
     )
-    .post("/login", 
+    .post(
+        "/login", 
         zValidator('json', loginSchema), 
         async (c) => {
             const { email, password } = c.req.valid("json");
@@ -49,7 +52,8 @@ const app = new Hono()
             return c.json({ success : true });
         }
     )
-    .post("/register",
+    .post(
+        "/register",
         zValidator('json', registerSchema),
         async (c) => {
             const { name, email, password } = c.req.valid("json");
@@ -72,7 +76,9 @@ const app = new Hono()
             return c.json({ success : true });
         }
     )
-    .post("/logout", sessionMiddleware, 
+    .post(
+        "/logout", 
+        sessionMiddleware, 
         async (c) => {
             const account = c.get("account");
 
