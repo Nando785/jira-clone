@@ -17,6 +17,7 @@ export type Task = Models.Document & {
     project_id: string;
     position: number;
     due_date: string;
+    description?: string;
 };
 
 // types.ts
