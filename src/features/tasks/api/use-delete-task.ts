@@ -1,5 +1,4 @@
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { InferRequestType, InferResponseType } from "hono";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -15,7 +14,6 @@ type RequestType = InferRequestType<typeof client.api.tasks[":taskId"]["$delete"
  */
 
 export const useDeleteTask = () => {
-    const router = useRouter();
     const queryClient = useQueryClient();
 
     const mutation = useMutation<
@@ -35,7 +33,6 @@ export const useDeleteTask = () => {
         onSuccess: ({ data }) => {
             // Display toast success message
             toast.success("Task deleted");
-            router.refresh();
 
             // Invalidate the 'projects' query and trigger a refetch of the data to update UI
             queryClient.invalidateQueries({ queryKey: ["tasks"] });

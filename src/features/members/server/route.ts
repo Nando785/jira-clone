@@ -103,7 +103,8 @@ const app = new Hono()
 
             return c.json( {data: { $id: memberToDelete.$id } });
         }
-    ).patch(
+    )
+    .patch(
         "/:memberId",
         sessionMiddleware,
         zValidator("json", z.object({ role: z.nativeEnum(MemberRole) })),
