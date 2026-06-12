@@ -22,6 +22,6 @@ export type Task = Models.Document & {
 
 // types.ts
 export type PopulatedTask = Task & {
-    project: Project;
-    assignee: { name: string; email: string };
+    project?: Project;
+    assignee?: { name: string; email: string };
 };

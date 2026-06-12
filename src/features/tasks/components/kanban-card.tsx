@@ -27,7 +27,7 @@ export const KanbanCard = ({
 
             <div className="flex items-center gap-x-1.5">
                 <MemberAvatar 
-                    name={task.assignee.name}
+                    name={task.assignee?.name ?? "Member"}
                     fallbackClassName="text-[10px]"
                 />
 
@@ -35,14 +35,14 @@ export const KanbanCard = ({
 
                 <TaskDate value={task.due_date} className="text-xs" />
             </div>
-
+ 
             <div className="flex items-center gap-x-1.5">
                 <ProjectAvatar 
-                    name={task.project.name}
-                    image={task.project.imageUrl}
+                    name={task.project?.name ?? "Project"}
+                    image={task.project?.imageUrl ?? ""}
                     fallbackClassName="text-[10px]"
                 />
-                    <span className="text-xs font-medium">{task.project.name}</span>
+                    <span className="text-xs font-medium">{task.project?.name ?? "Project"}</span>
             </div>
         </div>
     );

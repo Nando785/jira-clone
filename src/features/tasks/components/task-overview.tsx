@@ -41,7 +41,7 @@ export const TaskOverview = ({
                 <div className=" flex flex-col gap-y-4">
                     <OverViewProperty label="Assignee">
                         <MemberAvatar 
-                            name={task.assignee.name}
+                            name={task.assignee?.name ?? "Task"}
                             className="size-6"
                         />
                     </OverViewProperty>
