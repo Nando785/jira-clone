@@ -60,7 +60,7 @@ interface TaskListProps {
     total: number;
 }
 
-export const TaskList = ({ data, total }:TaskListProps) => {
+export const TaskList = ({ data, total }: TaskListProps) => {
     const workspaceId = useWorkspaceId();
     const { open: createTask} = useCreateTaskModal();
 
