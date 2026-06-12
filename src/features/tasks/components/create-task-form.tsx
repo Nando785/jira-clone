@@ -51,27 +51,11 @@ export const CreateTaskForm = ({
     const workspaceId = useWorkspaceId();
     const { mutate, isPending } = useCreateTask();
 
-    // Initialize form, create a single input and set initial values, use zod for validation
-    // const form = useForm<z.infer<typeof createTaskSchema>>({
-    //     resolver: zodResolver(createTaskSchema.omit({ workspaceId: true })), // Require input to match zod schema
-    //     defaultValues: {
-    //         workspaceId,
-    //     },
-    // });
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema) as unknown as Resolver<z.infer<typeof formSchema>>,
         defaultValues: {},
     });
  
-    // Call encapsulated project creation functions from useCreateWorkspace and pass in given values
-    // const onSubmit = (values: z.infer<typeof createTaskSchema>) => {
-    //     mutate({ json: {...values, workspaceId} }, {
-    //         onSuccess: ({ data }) => {
-    //             form.reset();
-    //             //TODO: Redirect to new task
-    //         }
-    //     });
-    // };
     const onSubmit = (values: z.infer<typeof formSchema>) => {
         mutate({ json: { ...values, workspaceId } }, {
             onSuccess: ({ data }) => {

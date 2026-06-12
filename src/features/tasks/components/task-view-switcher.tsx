@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useQueryState } from "nuqs";
 import { Loader, PlusIcon } from "lucide-react";
 
+import { useProjectId } from "@/features/projects/hooks/use-project-id";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export const TaskViewSwitcher = ({
     });
 
     const workspaceId = useWorkspaceId();
+    const paramProjectId = useProjectId();
 
     const { 
         data: tasks, 
@@ -50,7 +52,7 @@ export const TaskViewSwitcher = ({
         workspaceId,
         status,
         assigneeId,
-        projectId,
+        projectId: paramProjectId || projectId,
         dueDate,
     });
 
