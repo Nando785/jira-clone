@@ -35,6 +35,8 @@ export const useCreateTask = () => {
             toast.success("Task created");
 
             // Invalidate the 'projects' query and trigger a refetch of the data to update UI
+            queryClient.invalidateQueries({ queryKey: ["project-analytics"]});
+            queryClient.invalidateQueries({ queryKey: ["workspace-analytics"]});
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
         },
 
