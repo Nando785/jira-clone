@@ -33,10 +33,8 @@ export const useLogout = () => {
         onSuccess: () => {
             toast.success("Logout successful");
             router.refresh();
-            // Refresh the router to update server components, then invalidate
-            // the cache so any subscriber to "current" re-fetches the new session
-            queryClient.invalidateQueries({ queryKey: ["current"] });
-            queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+            
+            queryClient.invalidateQueries();
         },
         onError: () => {
             toast.error("Failed to logout");
