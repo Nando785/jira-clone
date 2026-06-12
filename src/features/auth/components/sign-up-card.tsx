@@ -8,6 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormItem, FormField, FormMessage } from "@/components/ui/form";
 
+import { signUpWithGithub, signUpWithGoogle } from "@/lib/oauth";
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
@@ -125,6 +126,7 @@ export const SignUpCard = () => {
 
 			<CardContent className="p-7 flex flex-col gap-y-4">
 				<Button
+                    onClick={() => signUpWithGoogle()}
 					disabled={isPending}
 					variant="secondary"
 					size="lg"
@@ -135,6 +137,7 @@ export const SignUpCard = () => {
 				</Button>
 				
 				<Button
+                    onClick={() => signUpWithGithub()}
 					disabled={isPending}
 					variant="secondary"
 					size="lg"
