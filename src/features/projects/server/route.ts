@@ -11,7 +11,7 @@ import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID, APPWRITE_ENDPOINT, APPWRITE
 import { sessionMiddleware } from "@/lib/session-middleware";
 import WorkspaceIdPage from "@/app/(dashboard)/workspaces/[workspaceId]/page";
 import { Project } from "../types";
-import { TaskStatus } from "@/features/tasks/types";
+import { Task, TaskStatus } from "@/features/tasks/types";
 
 const app = new Hono()
     .post(
@@ -157,40 +157,57 @@ const app = new Hono()
             }
     )
     .delete(
-                "/:projectId",
-                sessionMiddleware,
-                async (c) => {
-                    const databases = c.get("databases");
-                    const user = c.get("user");
-        
-                    const { projectId } = c.req.param();
+        "/:projectId",
+        sessionMiddleware,
+        async (c) => {
+            const databases = c.get("databases");
+            const user = c.get("user");
 
-                    const existingProject = await databases.getDocument<Project>(
-                        DATABASE_ID,
-                        PROJECTS_ID,
-                        projectId
-                    );
-        
-                    const member = await getMember({
-                        databases,
-                        workspaceId: existingProject.workspace_id,
-                        userId: user.$id,
-                    });
-        
-                    if (!member) {
-                        return c.json({ error: "Unauthorized" }, 401);
-                    }
-        
-                    // TODO: Delete rasks
-        
-                    await databases.deleteDocument(
-                        DATABASE_ID,
-                        PROJECTS_ID,
-                        projectId
-                    );
-        
-                    return c.json({ data: {$id: existingProject.$id} });
-                }
+            const { projectId } = c.req.param();
+
+            // === CHECK AUTHORIZATION ===
+            const existingProject = await databases.getDocument<Project>(
+                DATABASE_ID,
+                PROJECTS_ID,
+                projectId
+            );
+
+            const member = await getMember({
+                databases,
+                workspaceId: existingProject.workspace_id,
+                userId: user.$id,
+            });
+
+            if (!member) {
+                return c.json({ error: "Unauthorized" }, 401);
+            };
+
+            // === CLEANUP ASSOCIATED TASKS ===
+            const tasks = await databases.listDocuments<Task>(
+                DATABASE_ID,
+                TASKS_ID,
+                [
+                    Query.equal("project_id", projectId),
+                ]
+            );
+
+            tasks.documents.forEach(async (task) => {
+                await databases.deleteDocument(
+                    DATABASE_ID,
+                    TASKS_ID,
+                    task.$id
+                );
+            });
+
+            // === DELETE PROJECT ===
+            await databases.deleteDocument(
+                DATABASE_ID,
+                PROJECTS_ID,
+                projectId
+            );
+
+            return c.json({ data: {$id: existingProject.$id} });
+        }
     )
     .get(
         "/:projectId",

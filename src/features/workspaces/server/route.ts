@@ -3,8 +3,9 @@ import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
-import { TaskStatus } from "@/features/tasks/types";
-import { MemberRole } from "@/features/members/types";
+import { Project } from "@/features/projects/types";
+import { Task, TaskStatus } from "@/features/tasks/types";
+import { Member, MemberRole } from "@/features/members/types";
 
 import {
     DATABASE_ID, 
@@ -13,7 +14,8 @@ import {
     APPWRITE_ENDPOINT, 
     APPWRITE_PROJECT_ID,
     MEMBERS_ID,
-    TASKS_ID
+    TASKS_ID,
+    PROJECTS_ID
 } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { generateInviteCode } from "@/lib/utils";
@@ -24,18 +26,9 @@ import { Workspace } from "../types";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 /**
- * This module defines a Hono route handler for creating a new workspace.
- * It uses the Appwrite API to create a new document in the specified database.
+ * @file Hono route handler
+ * @description 
  * 
- * The route handler validates the incoming JSON payload against the `createWorkspaceSchema`.
- * It retrieves the `databases` and `user` objects from the middleware context.
- * 
- * The `createDocument` function is called with the `DATABASE_ID`, `WORKSPACES_ID`, a randomly generated ID using Appwrite's ID generation,
- * and the `name` and `user_id` properties from the validated JSON payload.
- * 
- * The resulting `workspace` object is returned as a JSON response.
- * 
- * @returns {Hono} The Hono route handler for creating a new workspace.
  */
 
 const app = new Hono()
@@ -247,7 +240,61 @@ const app = new Hono()
                 return c.json({ error: "Unauthorized" }, 401);
             }
 
-            // TODO: Delete members, projects, and tasks associated with this workspace
+            // Delete all tasks associated with the workspace
+
+            const tasks = await databases.listDocuments<Task>(
+                DATABASE_ID,
+                TASKS_ID,
+                [
+                    Query.equal("workspace_id", workspaceId),
+                ]
+            );
+
+            tasks.documents.forEach(async (task) => {
+                await databases.deleteDocument(
+                    DATABASE_ID,
+                    TASKS_ID,
+                    task.$id
+                );
+            });
+
+            // Delete all projects associated with the workspace
+
+            const projects = await databases.listDocuments<Project>(
+                DATABASE_ID,
+                PROJECTS_ID,
+                [
+                    Query.equal("workspace_id", workspaceId),
+                ]
+            );
+
+            projects.documents.forEach(async (project) => {
+                await databases.deleteDocument(
+                    DATABASE_ID,
+                    PROJECTS_ID,
+                    project.$id
+                );
+            });
+
+            // Delete all members associated with the workspace
+
+            const members = await databases.listDocuments<Member>(
+                DATABASE_ID,
+                MEMBERS_ID,
+                [
+                    Query.equal("workspace_id", workspaceId),
+                ],
+            );
+
+            members.documents.forEach(async (member) => {
+                await databases.deleteDocument(
+                    DATABASE_ID,
+                    MEMBERS_ID,
+                    member.$id
+                );
+            })
+
+            // Delete the workspace
 
             await databases.deleteDocument(
                 DATABASE_ID,
